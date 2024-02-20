@@ -15,6 +15,6 @@
  - MongoDB (Atlas)
  - Mongoose
 
-Deployed in Heroku.
+Deployed on Render.
 
-https://stormy-hamlet-40497.herokuapp.com/
+https://todolistapp-oz6u.onrender.com/
