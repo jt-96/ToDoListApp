@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -7,7 +8,7 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect('mongodb+srv://<username>:<password>@cluster0.4mhll.mongodb.net/todolistDB');
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.4mhll.mongodb.net/todolistDB`);
 
 const itemsSchema = {
     name: String
