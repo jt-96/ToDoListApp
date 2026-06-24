@@ -8,7 +8,8 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.4mhll.mongodb.net/todolistDB`);
+const uri= `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0-shard-00-00.4mhll.mongodb.net:27017,cluster0-shard-00-01.4mhll.mongodb.net:27017,cluster0-shard-00-02.4mhll.mongodb.net:27017/todolistDB?ssl=true&replicaSet=atlas-41kt6v-shard-0&authSource=admin&appName=Cluster0`
+const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
 const itemsSchema = {
     name: String
@@ -40,15 +41,13 @@ app.get('/', function (req, res) {
 
     var today = new Date().toLocaleDateString('en-US', options);
 
-    Item.find({}, (err, foundItems) => {
-
+    Item.find().then((foundItems) => {
         if (foundItems.length === 0) {
-            Item.insertMany(defaultItems)
+            Item.insertMany(defaultItems);
         } else {
-            res.render('list', { listTitle: today, newListItem: foundItems })
+            res.render('list', {listTitle: today, newListItem: foundItems})
         }
     })
-
 })
 
 app.post('/', function (req, res) {
@@ -67,22 +66,32 @@ app.post('/', function (req, res) {
 app.post('/delete', (req, res) => {
     const checkedItemId = req.body.checkbox;
 
-    Item.findByIdAndRemove(checkedItemId, (err) => {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Item removed succesfully');
-        }
-    })
-
+    try {
+        Item.findByIdAndDelete(checkedItemId).then(() => console.log('Item removed succesfully'));
+    } catch (err) {
+        console.log(err)
+    }
+    
     res.redirect('/');
 })
+
+async function main() {
+    try {
+        await mongoose.connect(uri, clientOptions);
+        console.log("Connected to MongoDB!");
+        
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 let port = process.env.PORT;
 
 if (port == null || port == "") {
     port = 3000;
 }
+
+main().catch(err => console.log(err));
 
 app.listen(port, function () {
     console.log('Server started successfully');
